@@ -1,7 +1,9 @@
 <?php
 /*
-* MyBB GoMobile - 1.1
+* MyBBMobile v0.1dev
 * Licensed under GNU/GPL v3
+* 
+* Based off of MyBB GoMobile
 */
 
 // Disallow direct access to this file for security reasons
@@ -11,48 +13,48 @@ if(!defined("IN_MYBB"))
 }
 
 // Theme overriding
-$plugins->add_hook("global_start", "gomobile_forcetheme");
-$plugins->add_hook("global_end", "gomobile_fixcurrentpage");
+$plugins->add_hook("global_start", "mybbmobile_forcetheme");
+$plugins->add_hook("global_end", "mybbmobile_fixcurrentpage");
 
-// Used to insert data into the posts/threads table for posts made via GoMobile
-$plugins->add_hook("datahandler_post_insert_post", "gomobile_posts");
-$plugins->add_hook("datahandler_post_insert_thread_post", "gomobile_threads");
+// Used to insert data into the posts/threads table for posts made via MyBBMobile
+$plugins->add_hook("datahandler_post_insert_post", "mybbmobile_posts");
+$plugins->add_hook("datahandler_post_insert_thread_post", "mybbmobile_threads");
 
 // Page numbers
-$plugins->add_hook("showthread_end", "gomobile_showthread");
+$plugins->add_hook("showthread_end", "mybbmobile_showthread");
 
 // UCP options
-$plugins->add_hook("usercp_options_end", "gomobile_usercp_options");
-$plugins->add_hook("usercp_do_options_end", "gomobile_usercp_options");
+$plugins->add_hook("usercp_options_end", "mybbmobile_usercp_options");
+$plugins->add_hook("usercp_do_options_end", "mybbmobile_usercp_options");
 
 // Misc. hooks
-$plugins->add_hook("misc_start", "gomobile_switch_version");
+$plugins->add_hook("misc_start", "mybbmobile_switch_version");
 
 // Plugin information
-function gomobile_info()
+function mybbmobile_info()
 {
 	global $lang;
 	
-	$lang->load("gomobile");
+	$lang->load("mybbmobile");
 
 	// Plugin information
 	return array(
-		"name"			=> $lang->gomobile,
-		"description"	=> $lang->gomobile_desc,
-		"website"		=> "http://www.mybbgm.com",
-		"author"		=> "MyBB GoMobile",
-		"authorsite"	=> "http://www.mybbgm.com",
-		"version"		=> "1.1",
+		"name"			=> $lang->mybbmobile,
+		"description"	=> $lang->mybbmobile_desc,
+		"website"		=> "http://mybbmobile.com",
+		"author"		=> "MyBBMobile",
+		"authorsite"	=> "http://mybbmobile.com",
+		"version"		=> "0.1dev",
 		"compatibility" => "16*"
 	);
 }
 
 // Installation functions
-function gomobile_install()
+function mybbmobile_install()
 {
 	global $db, $mybb, $lang;
 
-	$lang->load("gomobile");
+	$lang->load("mybbmobile");
 	
 	// Clean up the database before installing
 	// MyBB tables cleanup
@@ -72,13 +74,13 @@ function gomobile_install()
 	}
 	
 	// Settings cleanup
-	$db->query("DELETE FROM ".TABLE_PREFIX."settinggroups WHERE name='gomobile'");
-	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='gomobile_header_text'");
-	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='gomobile_theme_id'");
-	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='gomobile_permstoggle'");
-	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='gomobile_homename'");
-	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='gomobile_homelink'");
-	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='gomobile_strings'");
+	$db->query("DELETE FROM ".TABLE_PREFIX."settinggroups WHERE name='mybbmobile'");
+	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='mybbmobile_header_text'");
+	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='mybbmobile_theme_id'");
+	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='mybbmobile_permstoggle'");
+	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='mybbmobile_homename'");
+	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='mybbmobile_homelink'");
+	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='mybbmobile_strings'");
 
 	// Add a column to the posts & threads tables for tracking mobile posts
 	$db->query("ALTER TABLE ".TABLE_PREFIX."posts ADD mobile int NOT NULL default '0'");
@@ -88,7 +90,7 @@ function gomobile_install()
 	$db->query("ALTER TABLE ".TABLE_PREFIX."users ADD usemobileversion int NOT NULL default '1'");
 
 	// First, check that our theme doesn't already exist
-	$query = $db->simple_select("themes", "tid", "LOWER(name) LIKE '%mybb gomobile%'");
+	$query = $db->simple_select("themes", "tid", "LOWER(name) LIKE '%mybbmobile%'");
 	if($db->num_rows($query))
 	{
 		// Theme is already installed
@@ -97,10 +99,10 @@ function gomobile_install()
 	else
 	{
 		// Import the theme for our users
-		$theme = MYBB_ROOT."inc/plugins/gomobile_theme.xml";
+		$theme = MYBB_ROOT."inc/plugins/mybbmobile_theme.xml";
 		if(!file_exists($theme))
 		{
-			flash_message("Upload the GoMobile Theme XML to the plugin directory (./inc/plugins/) before continuing.", "error");
+			flash_message("Upload the MyBBMobile Theme XML to the plugin directory (./inc/plugins/) before continuing.", "error");
 			admin_redirect("index.php?module=config/plugins");
 		}
 
@@ -141,18 +143,18 @@ Pre/
 UP.Browser
 Playstation Vita";
 
-	// Edit existing templates (shows when posts are from GoMobile)
+	// Edit existing templates (shows when posts are from MyBBMobile)
 	require_once MYBB_ROOT."inc/adminfunctions_templates.php";
 
-	find_replace_templatesets("postbit_posturl", '#'.preg_quote('<span').'#', '<img src="{$mybb->settings[\'bburl\']}/images/mobile/posted_{$post[\'mobile\']}.gif" alt="" width="{$post[\'mobile\']}8" height="{$post[\'mobile\']}8" title="{$lang->gomobile_posted_from}" style="vertical-align: middle;" /> '.'<span');
+	find_replace_templatesets("postbit_posturl", '#'.preg_quote('<span').'#', '<img src="{$mybb->settings[\'bburl\']}/images/mobile/posted_{$post[\'mobile\']}.gif" alt="" width="{$post[\'mobile\']}8" height="{$post[\'mobile\']}8" title="{$lang->mybbmobile_posted_from}" style="vertical-align: middle;" /> '.'<span');
 
 	// Prepare to insert the settings
 	$setting_group = array
 	(
 		"gid" => 0,
-		"name" => "gomobile",
-		"title" => "GoMobile Settings",
-		"description" => "Options, settings and strings used by MyBB GoMobile.",
+		"name" => "mybbmobile",
+		"title" => "MyBBMobile Settings",
+		"description" => "Options, settings and strings used by MyBBMobile.",
 		"disporder" => 1,
 		"isdefault" => 0,
 	);
@@ -161,44 +163,44 @@ Playstation Vita";
 	$dispnum = 0;
 
 	$settings = array(
-		"gomobile_mobile_name" => array(
-			"title"			=> $lang->gomobile_settings_mobile_name_title,
-			"description"	=> $lang->gomobile_settings_mobile_name,
+		"mybbmobile_mobile_name" => array(
+			"title"			=> $lang->mybbmobile_settings_mobile_name_title,
+			"description"	=> $lang->mybbmobile_settings_mobile_name,
 			"optionscode"	=> "text",
 			"value"			=> $db->escape_string($mybb->settings['bbname']),
 			"disporder"		=> ++$dispnum
 		),
-		"gomobile_theme_id" => array(
-			"title"			=> $lang->gomobile_settings_theme_id_title,
-			"description"	=> $lang->gomobile_settings_theme_id,
+		"mybbmobile_theme_id" => array(
+			"title"			=> $lang->mybbmobile_settings_theme_id_title,
+			"description"	=> $lang->mybbmobile_settings_theme_id,
 			"optionscode"	=> "text",
 			"value"			=> $theme,
 			"disporder"		=> ++$dispnum
 		),
-		"gomobile_permstoggle" => array(
-			"title"			=> $lang->gomobile_settings_permstoggle_title,
-			"description"	=> $lang->gomobile_settings_permstoggle,
+		"mybbmobile_permstoggle" => array(
+			"title"			=> $lang->mybbmobile_settings_permstoggle_title,
+			"description"	=> $lang->mybbmobile_settings_permstoggle,
 			"optionscode"	=> "yesno",
 			"value"			=> 0,
 			"disporder"		=> ++$dispnum
 		),
-		"gomobile_homename" => array(
-			"title"			=> $lang->gomobile_settings_homename_title,
-			"description"	=> $lang->gomobile_settings_homename,
+		"mybbmobile_homename" => array(
+			"title"			=> $lang->mybbmobile_settings_homename_title,
+			"description"	=> $lang->mybbmobile_settings_homename,
 			"optionscode"	=> "text",
 			"value"			=> $db->escape_string($mybb->settings['homename']),
 			"disporder"		=> ++$dispnum
 		),
-		"gomobile_homelink" => array(
-			"title"			=> $lang->gomobile_settings_homelink_title,
-			"description"	=> $lang->gomobile_settings_homelink,
+		"mybbmobile_homelink" => array(
+			"title"			=> $lang->mybbmobile_settings_homelink_title,
+			"description"	=> $lang->mybbmobile_settings_homelink,
 			"optionscode"	=> "text",
 			"value"			=> $db->escape_string($mybb->settings['homeurl']),
 			"disporder"		=> ++$dispnum
 		),
-		"gomobile_strings" => array(
-			"title"			=> $lang->gomobile_settings_strings_title,
-			"description"	=> $lang->gomobile_settings_strings,
+		"mybbmobile_strings" => array(
+			"title"			=> $lang->mybbmobile_settings_strings_title,
+			"description"	=> $lang->mybbmobile_settings_strings,
 			"optionscode"	=> "textarea",
 			"value"			=> $db->escape_string($strings),
 			"disporder"		=> ++$dispnum
@@ -217,12 +219,12 @@ Playstation Vita";
 }
 
 // Checks to see if the plugin is installed already
-function gomobile_is_installed()
+function mybbmobile_is_installed()
 {
     global $db;
 	
 	// Is the cache [the last installation step performed] ready for use?
-	$installed = $db->simple_select("settings", "*", "name='gomobile_strings'");
+	$installed = $db->simple_select("settings", "*", "name='mybbmobile_strings'");
 
     if($db->num_rows($installed))
     {
@@ -231,9 +233,9 @@ function gomobile_is_installed()
     return false;
 }
 
-// Uninstall MyBB GoMobile
+// Uninstall MyBBMobile
 // Not that anyone would want to do that, right? ;P
-function gomobile_uninstall()
+function mybbmobile_uninstall()
 {
 	global $db, $cache;
 
@@ -255,24 +257,24 @@ function gomobile_uninstall()
 	}
 	
 	// Settings cleanup
-	$db->query("DELETE FROM ".TABLE_PREFIX."settinggroups WHERE name='gomobile'");
-	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='gomobile_header_text'");
-	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='gomobile_theme_id'");
-	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='gomobile_permstoggle'");
-	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='gomobile_homename'");
-	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='gomobile_homelink'");
-	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='gomobile_strings'");
+	$db->query("DELETE FROM ".TABLE_PREFIX."settinggroups WHERE name='mybbmobile'");
+	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='mybbmobile_header_text'");
+	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='mybbmobile_theme_id'");
+	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='mybbmobile_permstoggle'");
+	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='mybbmobile_homename'");
+	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='mybbmobile_homelink'");
+	$db->query("DELETE FROM ".TABLE_PREFIX."settings WHERE name='mybbmobile_strings'");
 
 	// Can the template edits we made earlier
 	require_once MYBB_ROOT."inc/adminfunctions_templates.php";
 
 	// Undo the template edits
-	find_replace_templatesets("postbit_posturl", '#'.preg_quote('<img src="{$mybb->settings[\'bburl\']}/images/mobile/posted_{$post[\'mobile\']}.gif" alt="" width="{$post[\'mobile\']}8" height="{$post[\'mobile\']}8" title="{$lang->gomobile_posted_from}" style="vertical-align: middle;" /> '.'').'#', '', 0);
+	find_replace_templatesets("postbit_posturl", '#'.preg_quote('<img src="{$mybb->settings[\'bburl\']}/images/mobile/posted_{$post[\'mobile\']}.gif" alt="" width="{$post[\'mobile\']}8" height="{$post[\'mobile\']}8" title="{$lang->mybbmobile_posted_from}" style="vertical-align: middle;" /> '.'').'#', '', 0);
 }
 
 // This function checks if the UA string matches the database
-// If so, it displays the GoMobile theme
-function gomobile_forcetheme()
+// If so, it displays the MyBBMobile theme
+function mybbmobile_forcetheme()
 {
 	global $db, $mybb, $plugins, $cache, $lang, $current_page;
 	
@@ -291,7 +293,7 @@ function gomobile_forcetheme()
 		"moderation.php"
 	);
 	
-	$lang->load("gomobile");
+	$lang->load("mybbmobile");
 
 	if($mybb->session->is_spider == false)
 	{
@@ -299,27 +301,27 @@ function gomobile_forcetheme()
 		$GLOBALS['gmb_orig_style'] = intval($mybb->user['style']);
 		$GLOBALS['gmb_post_key'] = md5($mybb->post_code);
 
-		$plugins->add_hook("global_end", "gomobile_forcefooter");
+		$plugins->add_hook("global_end", "mybbmobile_forcefooter");
 	}
 
-	// Has the user chosen to disable GoMobile completely?
-	if(isset($mybb->user['usemobileversion']) && $mybb->user['usemobileversion'] == 0 && $mybb->user['uid'] && $mybb->cookies['gomobile'] != "force" )
+	// Has the user chosen to disable MyBBMobile completely?
+	if(isset($mybb->user['usemobileversion']) && $mybb->user['usemobileversion'] == 0 && $mybb->user['uid'] && $mybb->cookies['mybbmobile'] != "force" )
 	{
 		return false;
 	}
 
-	// Has the user temporarily disabled GoMobile via cookies?
-	if($mybb->cookies['gomobile'] == "disabled")
+	// Has the user temporarily disabled MyBBMobile via cookies?
+	if($mybb->cookies['mybbmobile'] == "disabled")
 	{
 		return false;
 	}
 	
 	// Is the admin using theme permission settings?
 	// If so, check them
-	if($mybb->settings['gomobile_permstoggle'] == 1)
+	if($mybb->settings['mybbmobile_permstoggle'] == 1)
 	{
 		// Fetch the theme permissions from the database
-		$tquery = $db->simple_select("themes", "*", "tid = '{$mybb->settings['gomobile_theme_id']}'");
+		$tquery = $db->simple_select("themes", "*", "tid = '{$mybb->settings['mybbmobile_theme_id']}'");
 		$tperms = $db->fetch_field($tquery, "allowedgroups");
 		
 		if($tperms != "all")
@@ -344,7 +346,7 @@ function gomobile_forcetheme()
 	}
 
 	// Grab the strings and put them into an array
-	$list = $mybb->settings['gomobile_strings'];
+	$list = $mybb->settings['mybbmobile_strings'];
 	
 	$replace = array("\n", "\r");
 	$list = str_replace($replace, ",", $list);
@@ -358,29 +360,29 @@ function gomobile_forcetheme()
 		// Run as long as there hasn't been a match yet
 		if(!$switch && $uastring)
 		{
-			// Switch to GoMobile if the UA matches our list
+			// Switch to MyBBMobile if the UA matches our list
 			if(stristr($_SERVER['HTTP_USER_AGENT'], $uastring))
 			{
 				$switch = true;
-				$mybb->user['style'] = $mybb->settings['gomobile_theme_id'];
+				$mybb->user['style'] = $mybb->settings['mybbmobile_theme_id'];
 			}
 		}
 	}
 
 	// Have we got this far without catching somewhere? Have we enabled mobile version?
-	if($mybb->cookies['gomobile'] == "force" && $switch == false)
+	if($mybb->cookies['mybbmobile'] == "force" && $switch == false)
 	{
-		$mybb->user['style'] = $mybb->settings['gomobile_theme_id'];
+		$mybb->user['style'] = $mybb->settings['mybbmobile_theme_id'];
 	}
 	
-	if(in_array($current_page, $valid) && $mybb->user['style'] == $mybb->settings['gomobile_theme_id'])
+	if(in_array($current_page, $valid) && $mybb->user['style'] == $mybb->settings['mybbmobile_theme_id'])
 	{
-		$current_page = "gomobile_temp";
+		$current_page = "mybbmobile_temp";
 	}
 }
 
 // Undo the slight change we may have made earlier to get around per-forum themes
-function gomobile_fixcurrentpage()
+function mybbmobile_fixcurrentpage()
 {
 	global $current_page;
 	
@@ -388,43 +390,43 @@ function gomobile_fixcurrentpage()
 }
 
 // Add a link in the footer only if we're not a bot
-function gomobile_forcefooter()
+function mybbmobile_forcefooter()
 {
     global $lang, $footer, $mybb, $navbits;
 
-    $footer = str_replace("<a href=\"<archive_url>\">".$lang->bottomlinks_litemode."</a>", "<a href=\"misc.php?action=switch_version&amp;my_post_key=".$GLOBALS['gmb_post_key']."\">".$lang->gomobile_mobile_version."</a>", $footer);
+    $footer = str_replace("<a href=\"<archive_url>\">".$lang->bottomlinks_litemode."</a>", "<a href=\"misc.php?action=switch_version&amp;my_post_key=".$GLOBALS['gmb_post_key']."\">".$lang->mybbmobile_mobile_version."</a>", $footer);
 	
 	// If we have a match, override the default breadcrumb
-	if($mybb->user['style'] == $mybb->settings['gomobile_theme_id'])
+	if($mybb->user['style'] == $mybb->settings['mybbmobile_theme_id'])
     {
         $navbits = array();
 		$navbits[0]['url'] = $mybb->settings['bburl'];
-        $navbits[0]['name'] = $mybb->settings['gomobile_mobile_name'];
+        $navbits[0]['name'] = $mybb->settings['mybbmobile_mobile_name'];
     }
 }
 
 // Page numbers and links, whoop
-function gomobile_showthread()
+function mybbmobile_showthread()
 {
 	global $mybb, $lang, $postcount, $perpage, $thread, $pagejump, $pages, $page_location;
 	
 	// Display the total number of pages
 	if($pages > 0) {
-		$page_location = " {$lang->gomobile_of} {$pages}";
+		$page_location = " {$lang->mybbmobile_of} {$pages}";
 	}
 	
 	// If there's more than one page, display links to the first & last posts
 	if($postcount > $perpage){
 		$pj_template = "<div class=\"float_left\" style=\"padding-top: 12px;\">
-			<a href=\"".get_thread_link($thread['tid'])."\" class=\"pagination_a\">{$lang->gomobile_jump_fpost}</a>
-			<a href=\"".get_thread_link($thread['tid'], 0, 'lastpost')."\" class=\"pagination_a\">{$lang->gomobile_jump_lpost}</a>
+			<a href=\"".get_thread_link($thread['tid'])."\" class=\"pagination_a\">{$lang->mybbmobile_jump_fpost}</a>
+			<a href=\"".get_thread_link($thread['tid'], 0, 'lastpost')."\" class=\"pagination_a\">{$lang->mybbmobile_jump_lpost}</a>
 			</div>";
 		$pagejump = $pj_template;
 	}
 }
 
-// Was this post sent from GoMobile?
-function gomobile_posts($p)
+// Was this post sent from MyBBMobile?
+function mybbmobile_posts($p)
 {
     global $mybb;
 
@@ -442,9 +444,9 @@ function gomobile_posts($p)
     return $p;
 } 
 
-// Was this thread sent from GoMobile? (identical to above, only for threads)
+// Was this thread sent from MyBBMobile? (identical to above, only for threads)
 // Might be redundant to some people, but meh
-function gomobile_threads($p)
+function mybbmobile_threads($p)
 {
     global $mybb;
 
@@ -461,8 +463,8 @@ function gomobile_threads($p)
     return $p;
 }
 
-// Add GoMobile-related options to the UCP
-function gomobile_usercp_options()
+// Add MyBBMobile-related options to the UCP
+function mybbmobile_usercp_options()
 {
 	global $db, $mybb, $templates, $user;
 
@@ -484,7 +486,7 @@ function gomobile_usercp_options()
 
 	$usercp_option = '</tr><tr>
 <td valign="top" width="1"><input type="checkbox" class="checkbox" name="usemobileversion" id="usemobileversion" value="1" {$GLOBALS[\'$usemobileversioncheck\']} /></td>
-<td><span class="smalltext"><label for="usemobileversion">{$lang->gomobile_use_mobile_version}(<a href="misc.php?action=switch_version&amp;do=clear&amp;my_post_key={$GLOBALS[\'gmb_post_key\']}">{$lang->gomobile_clear_cookies}</a>)</label></span></td>';
+<td><span class="smalltext"><label for="usemobileversion">{$lang->mybbmobile_use_mobile_version}(<a href="misc.php?action=switch_version&amp;do=clear&amp;my_post_key={$GLOBALS[\'gmb_post_key\']}">{$lang->mybbmobile_clear_cookies}</a>)</label></span></td>';
 
 	$find = '{$lang->show_codebuttons}</label></span></td>';
 	$templates->cache['usercp_options'] = str_replace($find, $find.$usercp_option, $templates->cache['usercp_options']);
@@ -498,7 +500,7 @@ function gomobile_usercp_options()
 }
 
 // Switch to the mobile view via the footer link
-function gomobile_switch_version()
+function mybbmobile_switch_version()
 {
 	global $db, $lang, $mybb;
 
@@ -521,21 +523,21 @@ function gomobile_switch_version()
 	if($mybb->input['do'] == "full")
 	{
 		// Disable the mobile theme
-		my_setcookie("gomobile", "disabled", -1);
+		my_setcookie("mybbmobile", "disabled", -1);
 	}
 	elseif($mybb->input['do'] == "clear")
 	{
 		// Clear the mobile theme cookie
-		my_setcookie("gomobile", "nothing", -1);
+		my_setcookie("mybbmobile", "nothing", -1);
 	}
 	else
 	{
 		// Assume we're wanting to switch to the mobile version
-		my_setcookie("gomobile", "force", -1);
+		my_setcookie("mybbmobile", "force", -1);
 	}
 
-	$lang->load("gomobile");
-	redirect($url, $lang->gomobile_switched_version);
+	$lang->load("mybbmobile");
+	redirect($url, $lang->mybbmobile_switched_version);
 }
 
 ?>
