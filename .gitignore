@@ -3,7 +3,6 @@
 /.project
 /.settings/org.eclipse.php.core.prefs
 /.settings/org.eclipse.wst.common.project.facet.core.xml
-/README.md
 /admin/backups/index.html
 /admin/inc/class_form.php
 /admin/inc/class_page.php
